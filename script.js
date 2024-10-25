@@ -64,13 +64,12 @@ const cachedDOM = {
     return (row * rowLength) + col;
   },
   getColsDOM: document.querySelectorAll(".cols"),
-  getScoreBoard: document.querySelector(".score h3"),
   getBoardCell: function(row, col) {
     const id = this.convertToID(row, col);
     const cell = this.getColsDOM[id];
     return cell;
   },
-  render: function(row, col, marker, scoreMSG) {
+  render: function(row, col, marker) {
     const cell = this.getBoardCell(row, col);
     if (marker === "x") {
       const x = this.change.xSVG();
@@ -79,7 +78,6 @@ const cachedDOM = {
       const o = this.change.oSVG();
       cell.appendChild(o);
     }
-    this.getScoreBoard.textContent = scoreMSG;
   }
 }
 
@@ -154,6 +152,7 @@ function createPlayer(name, mark) {
 
 const play = {
   game: gameboard, 
+  dom: cachedDOM,
   score: null,
   player1: null,
   player2: null,
