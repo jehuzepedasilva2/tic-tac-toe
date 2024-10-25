@@ -110,3 +110,7 @@ body {
 .col-12 {
   background-color: #7dd3fc;
 }
+
+.score {
+  text-align: center;
+}
