@@ -33,10 +33,10 @@ body {
 
 .circle {
   z-index: -1;
-  width: 95%;
-  height: 80%;
+  width: 105%;
+  height: 90%;
   position: absolute;
-  top: 54%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: #d7eefd;
