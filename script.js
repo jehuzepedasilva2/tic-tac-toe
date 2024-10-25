@@ -4,6 +4,9 @@ const GameBoard = {
     ["", "", ""],
     ["", "", ""], 
   ],
+  resetBoard: function() {
+    this.board = [["", "", ""], ["", "", ""], ["", "", ""]];
+  },
   boundCheck: function(row, col) {
     return (
       row < this.board.length && 
@@ -12,10 +15,13 @@ const GameBoard = {
     );  
   },
   markSpot: function(row, col, mark) {
-    if (this.boundCheck(row, col)) {
+    if (this.boundCheck(row, col) && this.board[row][col] === "") {
       this.board[row][col] = mark;
     }
     return this.checkIsWon(mark);
+  },
+  checkTie: function() {
+    return this.board.flat().every(cell => cell !== "");
   },
   checkIsWon: function(mark) {
     return this.checkWinCols(mark) || this.checkWinRows(mark) || this.checkWinDiagonals(mark)
@@ -24,7 +30,7 @@ const GameBoard = {
     let isWon = false;
     this.board.forEach(row => {
       const markCount = row.reduce((total, cell) => {
-        return total + (cell === mark ? 1 : 0); // Count cells matching 'mark'
+        return total + (cell === mark ? 1 : 0);
       }, 0);
       if (markCount === 3) {
         isWon = true;
@@ -72,6 +78,17 @@ const OnePlay = {
     this.player2 = createPlayer(name, mark);
   },
   currPlayer: 0,
+  checkWin: function(isWon1, isWon2) {
+    if (isWon1) {
+      alert(`${this.player1.name} wins!`)
+    } 
+    if (isWon2) {
+      alert(`${this.player2.name} wins!`)
+    }
+    if (this.GameBoard.checkTie()) {
+      alert("its a tie!")
+    }
+  },
   play: function(row, col) {
     let isWon1 = false;
     let isWon2 = false;
@@ -82,17 +99,6 @@ const OnePlay = {
       this.currPlayer = 0;
       isWon2 = GameBoard.markSpot(row, col, this.player2.mark);
     }
-    if (isWon1) {
-      alert(`${this.player1.name} wins!`)
-    }
-    if (isWon2) {
-      alert(`${this.player2.name} wins!`)
-    }
+    this.checkWin(isWon1, isWon2);
   }
 };
-
-const play = OnePlay;
-const p1 = prompt("p1 name");
-const p2 = prompt("p2 name");
-game.setPlayer1(p1, "x");
-game.setPlayer2(p2, "o");
