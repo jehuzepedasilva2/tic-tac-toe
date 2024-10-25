@@ -1,13 +1,17 @@
 const cachedDOM = {
-  getCellID: function(row, col) {
+  convertToID: function(row, col) {
     const rowLength = 3;
     return (row * rowLength) + col;
   },
-  getColsDOM: document.querySelectorAll(".middle #board .cols"),
+  getColsDOM: document.querySelectorAll(".cols"),
   getBoardCell: function(row, col) {
-    const id = this.getCellID(row, col);
+    const id = this.convertToID(row, col);
     const cell = this.getColsDOM[id];
     return cell;
+  },
+  render: function(row, col, marker) {
+    const cell = this.getBoardCell(row, col);
+    cell.textContent = marker;
   }
 }
 
