@@ -1,3 +1,16 @@
+const cachedDOM = {
+  getCellID: function(row, col) {
+    const rowLength = 3;
+    return (row * rowLength) + col;
+  },
+  getColsDOM: document.querySelectorAll(".middle #board .cols"),
+  getBoardCell: function(row, col) {
+    const id = this.getCellID(row, col);
+    const cell = this.getColsDOM[id];
+    return cell;
+  }
+}
+
 const gameboard = {
   board: [
     ["", "", ""], 
