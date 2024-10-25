@@ -1,4 +1,4 @@
-const GameBoard = {
+const gameboard = {
   board: [
     ["", "", ""], 
     ["", "", ""],
@@ -67,8 +67,8 @@ function createPlayer(name, mark) {
   };
 }
 
-const OnePlay = {
-  game: GameBoard, 
+const play = {
+  game: gameboard, 
   player1: null,
   player2: null,
   setPlayer1: function(name, mark) {
@@ -94,10 +94,10 @@ const OnePlay = {
     let isWon2 = false;
     if (this.currPlayer === 0) {
       this.currPlayer = 1;
-      isWon1 = GameBoard.markSpot(row, col, this.player1.mark);
+      isWon1 = this.game.markSpot(row, col, this.player1.mark);
     } else {
       this.currPlayer = 0;
-      isWon2 = GameBoard.markSpot(row, col, this.player2.mark);
+      isWon2 = this.game.markSpot(row, col, this.player2.mark);
     }
     this.checkWin(isWon1, isWon2);
   }
