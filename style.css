@@ -22,13 +22,12 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
+  gap: 10px;
   margin: 0px;
   padding: 0px;
 }
 
 .header {
-  position: absolute;
-  top: 5rem;
   font-size: larger;
 }
 
@@ -37,6 +36,9 @@ body {
   width: 95%;
   height: 80%;
   position: absolute;
+  top: 54%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: #d7eefd;
   border-radius: 1000rem;
 }
@@ -49,6 +51,7 @@ body {
   align-content: center;
   border-radius: 1.4rem;
   background-color: #ff3333;
+  box-shadow: 0px 10px 8px #6b7280;
   padding: 1.5rem;
 }
 
