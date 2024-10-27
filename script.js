@@ -1,3 +1,5 @@
+// TODO: Add a modal that announces tie, win, loss. Current one is not good lol
+
 const addSVGs = {
   setAttributes: function(element, attributes) {
     for (let key in attributes) {
