@@ -387,11 +387,7 @@ function computer() {
           }
         }
       }
-      if (bestMove) {
-        ({ row, col } = bestMove);
-      } else {
-        console.log("no good moves?");
-      }
+      ({ row, col } = bestMove);
     }
 
     const isWon = game.markSpot(row, col, mark);
@@ -525,15 +521,15 @@ const events = {
     this.handleSelector("hidden", "visible", "hidden", diff[0].toUpperCase() + diff.slice(1));
     if (compMark === "x") {
       this.computer.play();
-      compSideBtn.style.cssText = style;
+      userSideBtn.style.cssText = style;
     } else {
       userSideBtn.style.cssText = style;
     }
   },
   setSides: function() {
     const sideBtn = this.dom.getSideButtons;
-   sideBtn[0].addEventListener("click", () => this.sideBtnHandler("x", sideBtn[0], "o", sideBtn[1], "border-right: 2px solid #ff3333;"))
-   sideBtn[1].addEventListener("click", () => this.sideBtnHandler("o", sideBtn[1], "x", sideBtn[0], "border-left: 2px solid #ff3333;"));
+   sideBtn[0].addEventListener("click", () => this.sideBtnHandler("x", sideBtn[0], "o", sideBtn[1], "border-right: 4px solid #1dd3fa;"))
+   sideBtn[1].addEventListener("click", () => this.sideBtnHandler("o", sideBtn[1], "x", sideBtn[0], "border-left: 4px solid #ff3333;"));
   },
   resetButton: function() {
     const resetBtn = this.dom.getResetButton;
@@ -551,7 +547,7 @@ const events = {
       // Reset side buttons
       sideBtn.forEach(btn => {
         btn.disabled = false;                                  // Enable the side buttons
-        btn.style.cssText = "border: 2px solid white;";        // Reset any custom styles
+        btn.style.cssText = "border: 2px solid black;";        // Reset any custom styles
       });
 
       this.sideButtonStatus(false);    // Re-enable side button functionality
