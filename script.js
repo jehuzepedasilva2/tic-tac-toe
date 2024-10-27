@@ -372,22 +372,27 @@ function computer() {
         }
       }
     } else {
-      let bestScore = -Infinity;
-      let bestMove;
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          if (game.isValidSpot(i, j)) {
-            game.markSpot(i, j, mark);
-            let moveScore = minimax(0, false, mark);
-            game.undoMark(i, j);
-            if (moveScore > bestScore) {
-              bestScore = moveScore;
-              bestMove = { row: i, col: j };
+      if (game.isEmpty() && isX) {
+        const openCorners = game.getOpenCorners();
+        ({ row, col } = openCorners[Math.floor(Math.random() * openCorners.length)]);
+      } else {
+        let bestScore = -Infinity;
+        let bestMove;
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            if (game.isValidSpot(i, j)) {
+              game.markSpot(i, j, mark);
+              let moveScore = minimax(0, false, mark);
+              game.undoMark(i, j);
+              if (moveScore > bestScore) {
+                bestScore = moveScore;
+                bestMove = { row: i, col: j };
+              }
             }
           }
         }
+        ({ row, col } = bestMove);
       }
-      ({ row, col } = bestMove);
     }
 
     const isWon = game.markSpot(row, col, mark);
