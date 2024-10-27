@@ -178,7 +178,6 @@ const gameboard = {
 
 
 function findWinningMove(mark) {
-  // Loop through rows and columns to check if there's a winning spot
   const game = gameboard;
   for (let i = 0; i < 3; i++) {
       // Check rows
@@ -559,12 +558,17 @@ const events = {
 
       this.sideButtonStatus(false);    // Re-enable side button functionality
     });
+  }, 
+  init: function() {
+    events.setSides();
+    events.resetButton();
   }
 }
 
+
+// Initialize game
 function playGame() {
-    events.setSides();
-    events.resetButton();
+  events.init();
 };
 
 playGame();
