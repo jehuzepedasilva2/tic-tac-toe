@@ -50,6 +50,7 @@ select, .filler {
 }
 
 .filler {
+  background-color: #f1eeee;
   visibility: hidden;
   position: absolute;
   border: 1px solid black;

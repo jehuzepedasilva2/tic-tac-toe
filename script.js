@@ -555,9 +555,9 @@ const events = {
   }
 }
 
-window.onload = function() {
-  (function() {
+function playGame() {
     events.setSides();
     events.resetButton();
-  })();
 };
+
+playGame();
