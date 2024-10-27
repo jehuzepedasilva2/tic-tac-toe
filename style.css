@@ -11,6 +11,34 @@ body {
   height: 100vh;
 }
 
+select {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  display: block;
+  font-family: inherit;
+  font-size: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  width: 130%;
+  padding: 5px;
+  height: max-content;
+  box-shadow: inset 1px 1px 3px #ccc;
+  border-radius: 5px;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  position: absolute;
+  content: "▼";
+  font-size: 1.2rem;
+  top: 8px;
+  right: -20px;
+}
+
 .left, .right {
   flex: 1;
 }
@@ -29,11 +57,15 @@ body {
 
 .header {
   font-size: larger;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 }
 
 .outer {
-  height: 700px;
-  width: 700px;
+  height: 600px;
+  width: 600px;
   border-radius: 1.4rem;
   background-color: #ff3333;
   box-shadow: 2px 10px 8px #6b7280;
@@ -66,6 +98,7 @@ body {
 
 .cols:hover {
   transform: scale(1.04);
+  border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -119,7 +152,7 @@ body {
 }
 
 .left-btn, .right-btn {
-  background-color:  #0284c7;
+  background-color: #0284c7;
   padding: 8px;
   border: none;
   border: 1px solid white;
@@ -134,11 +167,35 @@ body {
   font-size: 1.8rem;
 }
 
-.right-btn:hover, .left-btn:hover {
+.right-btn:hover, .left-btn:hover, .reset:hover{
   transform: scale(1.04);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-.left-btn:active, .right-btn:active {
+.left-btn:active, .right-btn:active, .reset:active {
   opacity: .9;
+}
+
+.button-container {
+  display: flex;
+  width: 100%;
+  height: 15%;
+  justify-content: center;
+  align-items: center;
+  padding-top: 2rem;
+  margin: 0;
+}
+
+.reset {
+  font-size: larger;
+  font-weight: bold;
+  color: white;
+  width: 100%;
+  height: 50%;
+  background-color: #ff3333;
+  border: none;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: 2px 10px 8px #6b7280;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

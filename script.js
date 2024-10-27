@@ -62,6 +62,7 @@ const cachedDOM = {
   svgs: addSVGs,
   getColsDOM: document.querySelectorAll(".cols"),
   getSideButtons: document.querySelectorAll(".side-btn"),
+  getResetButton: document.querySelector(".reset"),
   render: function(cell, marker) {
     if (marker === "x") {
       const x = this.svgs.xSVG();
@@ -81,8 +82,8 @@ const cachedDOM = {
     });
   },
   resetSides: function() {
-    const btns = this.getSideButtons;
-    btns.forEach(btn => {
+    const sideBtn = this.getSideButtons;
+   sideBtn.forEach(btn => {
       btn.disabled = false;
       btn.style.cssText = "border: 2px solid white";
     });
@@ -161,6 +162,9 @@ const gameboard = {
         { row: 2, col: 2 }
     ];
     return corners.filter(corner => this.isValidSpot(corner.row, corner.col));
+  },
+  isEmpty: function() {
+    return this.board.flat().every(cell => cell === "");
   }
 };
 
@@ -211,60 +215,69 @@ function computer() {
   const game = gameboard;
   let score = 0;
   let side = null;
-  let mark= null;
-  function getRandomInt(max=3) {
-    return Math.floor(Math.random() * max)
+  let mark = null;
+  let isX = false;
+
+  function getRandomInt(max = 3) {
+    return Math.floor(Math.random() * max);
   }
+
+  function setScore(s="-") {
+    score = s === "-" ? 0 : s;
+    side.textContent = `${s}`;
+  }
+
   function setMark(choice) {
     mark = choice;
+    isX = mark === "x";
   }
+
   function setSide(chosen) {
     side = chosen.querySelector("div:last-child");
   }
+
   function play() {
+    if (mark == null) { return; }
     if (game.checkTie()) {
-      setTimeout(() => {
-        alert("It's a tie!");
-      }, 10);
-      game.resetBoard();
-      setTimeout(() => dom.reset(), 250);
+      setTimeout(() => alert("It's a tie!"), 10);
+      resetGame();
       return;
     }
-    let row = -1;
-    let col = -1;
-    // 1. Check for a winning move
+
+    let row, col;
     const winningMove = findWinningMove(mark);
+
     if (winningMove) {
-        row = winningMove.row;
-        col = winningMove.col;
+      // 1. Winning move for computer
+      ({ row, col } = winningMove);
     } else {
-        // 2. Check to block opponent's winning move
-        const opponentMark = mark === 'x' ? 'o' : 'x';
-        const blockMove = findWinningMove(opponentMark);
-        if (blockMove) {
-            row = blockMove.row;
-            col = blockMove.col;
-        } else if (game.isCenterOpen()) {
-            // 3. Take center if open
-            row = 1;
-            col = 1;
-        } else {
-            // 4. Choose a random corner if available
-            const openCorners = game.getOpenCorners();
-            if (openCorners.length > 0) {
-                const randomCorner = openCorners[Math.floor(Math.random() * openCorners.length)];
-                row = randomCorner.row;
-                col = randomCorner.col;
-            } else {
-                // 5. Fallback to random available spot
-                while (!game.isValidSpot(row, col)) {
-                    row = getRandomInt();
-                    col = getRandomInt();
-                }
-            }
+      // 2. Block opponent's winning move, or 3. Take center, or 4. Choose random corner, or 5. Fallback
+      const opponentMark = mark === 'x' ? 'o' : 'x';
+      const blockMove = findWinningMove(opponentMark);
+      if (blockMove) {
+        ({ row, col } = blockMove);
+      } else if (game.isCenterOpen()) {
+        if (game.isEmpty() && isX) {
+          row = getRandomInt();
+          col = getRandomInt();
+        } else{
+          [row, col] = [1, 1];
         }
+      } else {
+        const openCorners = game.getOpenCorners();
+        if (openCorners.length > 0) {
+          ({ row, col } = openCorners[Math.floor(Math.random() * openCorners.length)]);
+        } else {
+          // Random fallback
+          do {
+            row = getRandomInt();
+            col = getRandomInt();
+          } while (!game.isValidSpot(row, col));
+        }
+      }
     }
-    let isWon = game.markSpot(row, col, mark);
+
+    const isWon = game.markSpot(row, col, mark);
     const cells = dom.getColsDOM;
     let cell;
     Array.from(cells).forEach(c => {
@@ -273,24 +286,28 @@ function computer() {
         }
     });
     dom.render(cell, mark);
+
     if (isWon) {
-        score++;
-        setTimeout(() => {
-          alert("Computer wins!");
-        }, 20);
-        side.textContent = `${score}`;
-        game.resetBoard();
-        setTimeout(() => dom.reset(), 250);
+      setTimeout(() => alert("Computer wins!"), 20);
+      setScore(++score);
+      resetGame();
+      return;
     }
+
+    // Check tie after move
     if (game.checkTie()) {
-      setTimeout(() => {
-        alert("It's a tie!");
-      }, 20);
-      game.resetBoard();
-      setTimeout(() => dom.reset(), 250);
+      setTimeout(() => alert("It's a tie!"), 20);
+      resetGame();
     }
   }
-  return {setSide, setMark, play};
+
+  function resetGame() {
+    game.resetBoard();
+    setTimeout(() => dom.reset(), 250);
+    if (isX) setTimeout(play, 250);
+  }
+
+  return { setSide, setMark, play, setScore };
 }
 
 function user() {
@@ -299,38 +316,49 @@ function user() {
   let score = 0;
   let mark = null;
   let side = null;
+
+  function setScore(s="-") {
+    score = s === "-" ? 0 : s;
+    side.textContent = `${s}`;
+  }
+
   function setMark(choice) {
     mark = choice;
   }
+
   function setSide(chosen) {
     side = chosen.querySelector("div:last-child");
   }
+
   function play(row, col, cell, fn) {
-    if (game.checkTie()) {
-      alert("Its a tie");
-      game.reset();
-      dom.resetBoard();
-      return;
-    }
+    if (mark == null) { return; }
     if (!game.isValidSpot(row, col)) {
       return;
     }
+
     dom.render(cell, mark);
     let isWon = game.markSpot(row, col, mark);
     if (isWon) {
-      score++;
+      setScore(++score);
       setTimeout(() => {
         alert("You win!");
+        game.resetBoard();
+        dom.reset();
       }, 20);
-      side.textContent = `${score}`;
-      game.resetBoard();
-      setTimeout(() => dom.reset(), 250);
+    } else if (game.checkTie()) {
+      setTimeout(() => {
+        alert("It's a tie!");
+        game.resetBoard();
+        dom.reset();
+      }, 20);
     } else {
       setTimeout(fn, 250);
     }
   }
-  return {setSide, setMark, play};
+
+  return { setSide, setMark, play, setScore };
 }
+
 
 const events = {
   game: gameboard,
@@ -356,28 +384,56 @@ const events = {
       });
     });
   },
-  setSides: function() {
-    const btns = this.dom.getSideButtons;
-    btns[0].addEventListener("click", () => {
-      this.user.setMark("x");
-      this.user.setSide(btns[0]);
-      this.computer.setMark("o");
-      this.computer.setSide(btns[1]);
-      btns[0].style.cssText = "border-right: 2px solid red;"
-      btns[1].disabled = true
-      this.setHandleCell();
+  sideButtonStatus: function(status) {
+    const sideBtn = this.dom.getSideButtons;
+    sideBtn.forEach(btn => {
+      btn.disabled = status;
     })
-    btns[1].addEventListener("click", () => {
-      this.user.setMark("o");
-      this.user.setSide(btns[1])
-      this.computer.setMark("x");
-      this.computer.setSide(btns[0])
-      btns[1].style.cssText = "border-left: 2px solid red;"
-      btns[0].disabled = true
-      this.computer.play();
-      this.setHandleCell();
-    });
   },
+  sideBtnHandler: function(userMark, userSideBtn, compMark, compSideBtn, style) {
+    this.user.setMark(userMark);
+    this.user.setSide(userSideBtn);
+    this.computer.setMark(compMark);
+    this.computer.setSide(compSideBtn);
+    this.sideButtonStatus(true);
+    this.setHandleCell();
+    if (compMark === "x") {
+      this.computer.play();
+      compSideBtn.style.cssText = style;
+    } else {
+      userSideBtn.style.cssText = style;
+    }
+  },
+  setSides: function() {
+    const sideBtn = this.dom.getSideButtons;
+   sideBtn[0].addEventListener("click", () => this.sideBtnHandler("x", sideBtn[0], "o", sideBtn[1], "border-right: 2px solid #ff3333;"))
+   sideBtn[1].addEventListener("click", () => this.sideBtnHandler("o", sideBtn[1], "x", sideBtn[0], "border-left: 2px solid #ff3333;"));
+  },
+  resetButton: function() {
+    const resetBtn = this.dom.getResetButton;
+    const sideBtn = this.dom.getSideButtons;
+    resetBtn.addEventListener("click", () => {
+      this.game.resetBoard();          // Reset the gameboard state
+      this.dom.reset();                // Reset the DOM visuals
+      this.user.setScore();            // Reset the user's score
+      this.user.setMark(null);
+      this.computer.setScore();        // Reset the computer's score
+      this.computer.setMark(null)
+  
+      // Reset side buttons
+      sideBtn.forEach(btn => {
+        btn.disabled = false;                                  // Enable the side buttons
+        btn.style.cssText = "border: 2px solid white;";        // Reset any custom styles
+      });
+
+      this.sideButtonStatus(false);    // Re-enable side button functionality
+    });
+  }
 }
 
-events.setSides();
+window.onload = function() {
+  (function() {
+    events.setSides();
+    events.resetButton();
+  })();
+};
