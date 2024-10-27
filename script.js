@@ -63,6 +63,9 @@ const cachedDOM = {
   getColsDOM: document.querySelectorAll(".cols"),
   getSideButtons: document.querySelectorAll(".side-btn"),
   getResetButton: document.querySelector(".reset"),
+  getSelector: document.querySelector("select"),
+  getFiller: document.querySelector(".filler"),
+  getSelectWrapper: document.querySelector(".select-wrapper"),
   render: function(cell, marker) {
     if (marker === "x") {
       const x = this.svgs.xSVG();
@@ -165,6 +168,9 @@ const gameboard = {
   },
   isEmpty: function() {
     return this.board.flat().every(cell => cell === "");
+  }, 
+  undoMark: function(row, col) {
+    this.board[row][col] = "";
   }
 };
 
@@ -210,6 +216,85 @@ function findWinningMove(mark) {
   return null;
 }
 
+function evaluateBoard(mark) {
+  const game = gameboard;
+  const opponentMark = mark === 'x' ? 'o' : 'x';
+
+  // Check rows, columns, and diagonals for a winning condition
+  for (let i = 0; i < 3; i++) {
+    // Check rows
+    if (game.board[i][0] === mark && game.board[i][1] === mark && game.board[i][2] === mark) {
+      return 10;
+    }
+    if (game.board[i][0] === opponentMark && game.board[i][1] === opponentMark && game.board[i][2] === opponentMark) {
+      return -10;
+    }
+
+    // Check columns
+    if (game.board[0][i] === mark && game.board[1][i] === mark && game.board[2][i] === mark) {
+      return 10;
+    }
+    if (game.board[0][i] === opponentMark && game.board[1][i] === opponentMark && game.board[2][i] === opponentMark) {
+      return -10;
+    }
+  }
+
+  // Check diagonals
+  if (game.board[0][0] === mark && game.board[1][1] === mark && game.board[2][2] === mark) {
+    return 10;
+  }
+  if (game.board[0][0] === opponentMark && game.board[1][1] === opponentMark && game.board[2][2] === opponentMark) {
+    return -10;
+  }
+  if (game.board[0][2] === mark && game.board[1][1] === mark && game.board[2][0] === mark) {
+    return 10;
+  }
+  if (game.board[0][2] === opponentMark && game.board[1][1] === opponentMark && game.board[2][0] === opponentMark) {
+    return -10;
+  }
+
+  // No win or loss; return 0 for a neutral/tie state
+  return 0;
+}
+
+function minimax(depth, isMaximizing, mark) {
+  const game = gameboard;
+  const opponentMark = mark === 'x' ? 'o' : 'x';
+  const score = evaluateBoard(mark);
+
+  // Base cases for ending recursion
+  if (score === 10) return score - depth; // Winning move
+  if (score === -10) return score + depth; // Losing move
+  if (game.checkTie()) return 0; // Tie
+
+  // Recursive case
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (game.isValidSpot(i, j)) {
+          game.markSpot(i, j, mark);
+          bestScore = Math.max(bestScore, minimax(depth + 1, false, mark));
+          game.undoMark(i, j);
+        }
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (game.isValidSpot(i, j)) {
+          game.markSpot(i, j, opponentMark);
+          bestScore = Math.min(bestScore, minimax(depth + 1, true, mark));
+          game.undoMark(i, j);
+        }
+      }
+    }
+    return bestScore;
+  }
+}
+
 function computer() {
   const dom = cachedDOM;
   const game = gameboard;
@@ -217,9 +302,14 @@ function computer() {
   let side = null;
   let mark = null;
   let isX = false;
+  let difficultyLevel = "medium";
 
   function getRandomInt(max = 3) {
     return Math.floor(Math.random() * max);
+  }
+
+  function setDifficulty(diff) {
+    difficultyLevel = diff;
   }
 
   function setScore(s="-") {
@@ -245,35 +335,62 @@ function computer() {
     }
 
     let row, col;
-    const winningMove = findWinningMove(mark);
-
-    if (winningMove) {
-      // 1. Winning move for computer
-      ({ row, col } = winningMove);
-    } else {
-      // 2. Block opponent's winning move, or 3. Take center, or 4. Choose random corner, or 5. Fallback
-      const opponentMark = mark === 'x' ? 'o' : 'x';
-      const blockMove = findWinningMove(opponentMark);
-      if (blockMove) {
-        ({ row, col } = blockMove);
-      } else if (game.isCenterOpen()) {
-        if (game.isEmpty() && isX) {
-          row = getRandomInt();
-          col = getRandomInt();
-        } else{
-          [row, col] = [1, 1];
-        }
+    if (difficultyLevel === "easy") {
+      do {
+        row = getRandomInt();
+        col = getRandomInt();
+      } while (!game.isValidSpot(row, col));
+    } else if (difficultyLevel === "medium") {
+      const winningMove = findWinningMove(mark);
+      if (winningMove) {
+        // 1. Winning move for computer
+        ({ row, col } = winningMove);
       } else {
-        const openCorners = game.getOpenCorners();
-        if (openCorners.length > 0) {
-          ({ row, col } = openCorners[Math.floor(Math.random() * openCorners.length)]);
-        } else {
-          // Random fallback
-          do {
+        // 2. Block opponent's winning move, or 3. Take center, or 4. Choose random corner, or 5. Fallback
+        const opponentMark = mark === 'x' ? 'o' : 'x';
+        const blockMove = findWinningMove(opponentMark);
+        if (blockMove) {
+          ({ row, col } = blockMove);
+        } else if (game.isCenterOpen()) {
+          if (game.isEmpty() && isX) {
             row = getRandomInt();
             col = getRandomInt();
-          } while (!game.isValidSpot(row, col));
+          } else{
+            [row, col] = [1, 1];
+          }
+        } else {
+          const openCorners = game.getOpenCorners();
+          if (openCorners.length > 0) {
+            ({ row, col } = openCorners[Math.floor(Math.random() * openCorners.length)]);
+          } else {
+            // Random fallback
+            do {
+              row = getRandomInt();
+              col = getRandomInt();
+            } while (!game.isValidSpot(row, col));
+          }
         }
+      }
+    } else {
+      let bestScore = -Infinity;
+      let bestMove;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (game.isValidSpot(i, j)) {
+            game.markSpot(i, j, mark);
+            let moveScore = minimax(0, false, mark);
+            game.undoMark(i, j);
+            if (moveScore > bestScore) {
+              bestScore = moveScore;
+              bestMove = { row: i, col: j };
+            }
+          }
+        }
+      }
+      if (bestMove) {
+        ({ row, col } = bestMove);
+      } else {
+        console.log("no good moves?");
       }
     }
 
@@ -307,7 +424,7 @@ function computer() {
     if (isX) setTimeout(play, 250);
   }
 
-  return { setSide, setMark, play, setScore };
+  return { setSide, setMark, play, setScore, setDifficulty };
 }
 
 function user() {
@@ -390,6 +507,12 @@ const events = {
       btn.disabled = status;
     })
   },
+  handleSelector: function(selectVis, fillerVis, selectWrapperVis, fillerText="") {
+    this.dom.getSelector.style.cssText = `visibility: ${selectVis};`;
+    if (fillerText !== "") this.dom.getFiller.textContent = fillerText;
+    this.dom.getFiller.style.cssText = `visibility: ${fillerVis};`;
+    this.dom.getSelectWrapper.style.cssText = `visibility: ${selectWrapperVis};`
+  },
   sideBtnHandler: function(userMark, userSideBtn, compMark, compSideBtn, style) {
     this.user.setMark(userMark);
     this.user.setSide(userSideBtn);
@@ -397,6 +520,9 @@ const events = {
     this.computer.setSide(compSideBtn);
     this.sideButtonStatus(true);
     this.setHandleCell();
+    const diff = this.dom.getSelector.value;
+    this.computer.setDifficulty(diff);
+    this.handleSelector("hidden", "visible", "hidden", diff[0].toUpperCase() + diff.slice(1));
     if (compMark === "x") {
       this.computer.play();
       compSideBtn.style.cssText = style;
@@ -419,6 +545,8 @@ const events = {
       this.user.setMark(null);
       this.computer.setScore();        // Reset the computer's score
       this.computer.setMark(null)
+
+      this.handleSelector("visible", "hidden", "visible")
   
       // Reset side buttons
       sideBtn.forEach(btn => {
